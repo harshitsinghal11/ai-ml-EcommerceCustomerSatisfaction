@@ -1,159 +1,259 @@
 # E-commerce Customer Satisfaction Prediction
 
-## Description
-This project predicts a customer's satisfaction level in an e-commerce setting using machine learning. It includes a full pipeline for data preprocessing, model training, evaluation, and a simple Streamlit web app for making predictions.
+> A local Python and Streamlit project that predicts whether an e-commerce customer is satisfied, neutral, or unsatisfied using two trained classification models.
 
-## About the Project
-The goal of this project is to classify customers into one of three categories:
+---
 
-- `Satisfied`
-- `Neutral`
-- `Unsatisfied`
+## What is E-commerce Customer Satisfaction Prediction?
 
-The project trains and compares two machine learning models:
+This repository packages a complete small-scale machine learning workflow around customer satisfaction prediction. It includes:
 
-- Logistic Regression
-- Decision Tree Classifier
+* a preprocessing pipeline for cleaning and selecting features from a CSV dataset
+* a training script that fits and compares two classifiers
+* a Streamlit application that lets a user enter customer details and view predictions from both models
 
-The trained models are then used inside a Streamlit app where a user can enter customer details and get predicted satisfaction results with confidence scores.
+The project appears to have been created to turn a raw e-commerce dataset into a runnable end-to-end example: data preparation, model training, model comparison, artifact persistence, and an interactive prediction interface.
 
-## Problem Statement
-Customer satisfaction is important for e-commerce businesses because it affects retention, repeat purchases, and overall business growth. This project aims to predict satisfaction level from customer-related features so that businesses can better understand user behavior and improve customer experience.
+In practical terms, it solves a narrow business question: given a small set of customer purchase signals, can the system estimate the customer's satisfaction category without retraining a model every time?
+
+The current application is built around two input variables exposed in the UI:
+
+* `Discount Applied`
+* `Days Since Last Purchase`
+
+The prediction output is one of three classes defined in the application:
+
+* `Satisfied`
+* `Neutral`
+* `Unsatisfied`
+
+### Built For
+
+* developers or students learning how to connect preprocessing, training, and deployment in one repository
+* analysts exploring simple classification approaches for customer satisfaction data
+* anyone who needs a lightweight local demo for comparing model predictions through a browser UI
+
+---
 
 ## Features
-- Cleans and preprocesses the dataset
-- Handles missing values
-- Encodes categorical features
-- Selects the most relevant features for prediction
-- Trains and compares two machine learning models
-- Saves trained models for reuse
-- Provides a simple Streamlit interface for prediction
-- Shows probability breakdown for both models
 
-## Tech Stack
-- Python
-- Pandas
-- NumPy
-- Scikit-learn
-- Matplotlib
-- Seaborn
-- Streamlit
-- Pickle
+### Data Preparation
 
-## Dataset Overview
-- File used: `dataset_raw.csv`
-- Total records: `350`
-- Total columns: `11`
-- Target column: `Satisfaction Level`
+* Loads raw data from `dataset_raw.csv`
+* Removes rows with missing `Satisfaction Level` values
+* Fills missing numeric values with the column median
+* Fills missing text values with the column mode
+* Label-encodes categorical fields including `Gender`, `City`, `Membership Type`, and `Satisfaction Level`
+* Converts `Discount Applied` to an integer field
+* Drops `Customer ID`
+* Detects and removes highly correlated columns using a correlation threshold above `0.9`
+* Selects the top two features most correlated with the target before training
 
-Main columns in the dataset:
-- Customer ID
-- Gender
-- Age
-- City
-- Membership Type
-- Total Spend
-- Items Purchased
-- Average Rating
-- Discount Applied
-- Days Since Last Purchase
-- Satisfaction Level
+### Model Training And Evaluation
 
-## Preprocessing Summary
-The preprocessing pipeline in `preprocess.py`:
+* Splits the preprocessed data into training and test sets
+* Trains a `LogisticRegression` classifier on standardized features
+* Trains a `DecisionTreeClassifier` on unscaled features
+* Prints accuracy and a classification report for each model
+* Generates and saves confusion matrix images for each model
+* Compares both models and reports the better-performing one during training
 
-1. Loads the raw dataset
-2. Removes rows with missing target values
-3. Fills missing numeric values with median
-4. Fills missing categorical values with mode
-5. Encodes categorical columns
-6. Drops unnecessary and highly correlated columns
-7. Selects the top 2 features most correlated with the target
+### Prediction Application
 
-Selected features used by the models:
-- `Discount Applied`
-- `Days Since Last Purchase`
+* Provides a Streamlit interface for entering customer details
+* Loads trained model artifacts from local `.pkl` files
+* Caches loaded artifacts with `st.cache_resource`
+* Runs both models side by side on the same input
+* Shows the predicted satisfaction label for each model
+* Displays a confidence value based on the highest class probability
+* Displays a probability breakdown for every class using progress bars
+* Shows an explicit error in the UI if model artifacts have not been generated yet
 
-## Model Training
-The training pipeline in `train.py`:
+### Local Artifacts
 
-- Splits the data into training and testing sets
-- Scales features for Logistic Regression
-- Trains Logistic Regression
-- Trains Decision Tree Classifier
-- Evaluates both models using accuracy
-- Evaluates both models using classification report
-- Evaluates both models using confusion matrix
-- Saves model files for the Streamlit app
+* Saves trained models to `lr_model.pkl` and `dt_model.pkl`
+* Saves the fitted scaler to `scaler.pkl`
+* Saves the selected feature order to `features.pkl`
+* Saves confusion matrix images to `cm_logistic_regression.png` and `cm_decision_tree.png`
 
-Saved files after training:
-- `lr_model.pkl`
-- `dt_model.pkl`
-- `scaler.pkl`
-- `features.pkl`
-- `cm_logistic_regression.png`
-- `cm_decision_tree.png`
-
-## Model Performance
-Current results from the training pipeline:
-
-- Logistic Regression Accuracy: `90.00%`
-- Decision Tree Accuracy: `85.71%`
-- Best Model: `Logistic Regression`
-
-## Streamlit App
-The `app.py` file provides a simple web interface where users can:
-
-- Select whether a discount was applied
-- Choose the number of days since last purchase
-- View predictions from both models
-- Compare confidence scores and probability breakdowns
-
-## Project Structure
-```text
-ecommerce-customer-satisfaction/
-|-- app.py
-|-- preprocess.py
-|-- train.py
-|-- dataset_raw.csv
-|-- lr_model.pkl
-|-- dt_model.pkl
-|-- scaler.pkl
-|-- features.pkl
-|-- cm_logistic_regression.png
-|-- cm_decision_tree.png
-`-- README.md
-```
+---
 
 ## Installation
-Install the required libraries:
+
+This repository does not include a `requirements.txt`, `pyproject.toml`, or other package manifest. Installation therefore needs to follow the imported dependencies in the source files.
+
+### Prerequisites
+
+* Python 3
+* `pip`
+
+### 1. Clone the repository
 
 ```bash
-pip install pandas numpy scikit-learn matplotlib seaborn streamlit
+git clone <repository-url>
+cd ecommerce-customer-satisfaction
 ```
 
-## How to Run
-### 1. Train the models
+### 2. Create and activate a virtual environment
+
+Windows PowerShell:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+```
+
+macOS or Linux:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+```
+
+### 3. Install dependencies
+
+```bash
+pip install numpy pandas scikit-learn matplotlib seaborn streamlit
+```
+
+### 4. Train the models
+
+Run the training script if you want to regenerate the model artifacts or if the `.pkl` files are missing.
+
 ```bash
 python train.py
 ```
 
-### 2. Start the Streamlit app
+This step produces:
+
+* `lr_model.pkl`
+* `dt_model.pkl`
+* `scaler.pkl`
+* `features.pkl`
+* `cm_logistic_regression.png`
+* `cm_decision_tree.png`
+
+### 5. Start the Streamlit application
+
 ```bash
 streamlit run app.py
 ```
 
+Then open the local URL shown by Streamlit in your browser.
+
+---
+
 ## How It Works
-- `preprocess.py` prepares the data
-- `train.py` trains and evaluates the models
-- `app.py` loads the saved models and makes predictions through a web app
+
+```text
+dataset_raw.csv
+    ↓
+preprocess.py
+    ↓
+cleaning, encoding, correlation filtering, feature selection
+    ↓
+train.py
+    ↓
+Logistic Regression + Decision Tree training
+    ↓
+saved artifacts (.pkl) + confusion matrix images (.png)
+    ↓
+app.py
+    ↓
+user input in Streamlit
+    ↓
+predictions, confidence, and class probabilities
+```
+
+In plain terms, the workflow is:
+
+1. The raw CSV is loaded and cleaned.
+2. Categorical values are encoded so scikit-learn models can use them.
+3. Unnecessary and highly correlated columns are removed.
+4. The top two features most correlated with the target are selected.
+5. Two classifiers are trained from the same processed data.
+6. The trained models, scaler, and selected feature list are saved to disk.
+7. The Streamlit app loads those saved files and waits for user input.
+8. When the user submits the form, the app prepares the input in the saved feature order, scales it for logistic regression, and returns predictions from both models.
+
+There is no database, external API, background worker, scheduler, or authentication layer in this implementation. All state is stored locally in repository files.
+
+---
+
+## Tech Stack
+
+| Layer | Technology | Purpose |
+| ----- | ---------- | ------- |
+| Language | Python | Implements preprocessing, training, and the web application |
+| UI | Streamlit | Provides the local browser-based prediction interface |
+| Data Handling | pandas | Loads the CSV dataset and performs tabular transformations |
+| Numerical Processing | NumPy | Supports numeric operations and matrix-based preprocessing steps |
+| Machine Learning | scikit-learn | Provides label encoding, train/test split, scaling, classifiers, and evaluation metrics |
+| Visualization | Matplotlib | Creates confusion matrix figures during model evaluation |
+| Visualization | Seaborn | Renders confusion matrix heatmaps |
+| Artifact Storage | pickle | Persists trained models, the scaler, and the selected feature list |
+| Data Source | CSV (`dataset_raw.csv`) | Supplies the training data used by the pipeline |
+
+---
+
+## Project Structure
+
+```text
+ecommerce-customer-satisfaction/
+├── app.py
+├── preprocess.py
+├── train.py
+├── dataset_raw.csv
+├── lr_model.pkl
+├── dt_model.pkl
+├── scaler.pkl
+├── features.pkl
+├── cm_logistic_regression.png
+├── cm_decision_tree.png
+├── .venv/
+├── .vscode/
+└── __pycache__/
+```
+
+Important files and directories:
+
+* `app.py` contains the Streamlit user interface and inference logic.
+* `preprocess.py` contains the data cleaning, encoding, correlation filtering, and feature-selection workflow.
+* `train.py` trains both models, evaluates them, and saves local artifacts for the app.
+* `dataset_raw.csv` is the source dataset used for preprocessing and training.
+* `*.pkl` files are serialized runtime artifacts consumed by the app.
+* `cm_*.png` files are generated evaluation outputs from the training script.
+* `.venv/`, `.vscode/`, and `__pycache__/` are local environment or generated directories rather than core application logic.
+
+---
+
+## Challenges Solved
+
+* Converts mixed raw CSV data into model-ready numerical input through missing-value handling and label encoding.
+* Reduces redundant inputs by removing `Customer ID` and dropping highly correlated columns before model fitting.
+* Supports two model types with different preprocessing needs by scaling only the logistic regression path while leaving the decision tree input unscaled.
+* Separates training from inference by persisting models, scaler state, and feature order to disk.
+* Exposes model probabilities in a non-technical UI so users can compare both models without reading console output.
+
+---
 
 ## Future Improvements
-- Add more input features to improve prediction quality
-- Save label encoders for clearer reverse mapping
-- Add a `requirements.txt` file
-- Improve UI design and add better visual feedback
-- Try more models such as Random Forest or XGBoost
 
-## Conclusion
-This is a simple and practical machine learning project that demonstrates the complete workflow from raw data to a working prediction app. It is useful for learning basic preprocessing, model comparison, and deployment with Streamlit.
+* Add a `requirements.txt` or `pyproject.toml` so installation is reproducible.
+* Persist label encoders explicitly and use them for reversible class and feature metadata handling.
+* Add automated tests for preprocessing, artifact creation, and Streamlit inference behavior.
+* Make dataset path, train/test split, feature count, and model hyperparameters configurable.
+* Replace the current correlation-only feature selection strategy with a more robust validation and feature-engineering workflow.
+* Add model versioning or artifact management so retraining results are easier to track.
+
+---
+
+## Author
+
+No author information is declared in the repository files.
+
+---
+
+## License
+
+No license file or license declaration is present in the repository.
